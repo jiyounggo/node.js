@@ -23,8 +23,6 @@ function (에러, client) {
 		console.log('listening on 8080')
 	});
 });
-
-
 app.get('/pet',function(요청,응답){
     응답.send('pet용품 쇼핑 할 수 있는 사이트 입니다')
 });
@@ -40,14 +38,12 @@ app.get('/write',function(요청,응답){
 app.post('/add', function (요청, 응답) {
     db.collection('counter').findOne({name : '게시물갯수'}, function(에러, 결과){
       var 총게시물갯수 = 결과.totalPost
-  
       db.collection('post').insertOne({ _id : 총게시물갯수 + 1, 제목 : 요청.body.title, 날짜 : 요청.body.date }, function (에러, 결과) {
         db.collection('counter').updateOne({name:'게시물갯수'},{ $inc: {totalPost:1} },function(에러, 결과){
       if(에러){return console.log(에러)}
           응답.send('전송완료');
         })
       })
-  
     })
   })
 app.get('/list',function(요청,응답){
@@ -86,3 +82,22 @@ app.delete('/delete', function(요청, 응답){
       응답.redirect('/list') 
     }); 
   }); 
+
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const session = require('express-session');
+
+app.use(session({secret : '비밀코드', resave : true, saveUninitialized: false}));
+app.use(passport.initialize());
+app.use(passport.session()); 
+
+app.get('/login', function (요청, 응답) {
+  응답.render('login.ejs')
+})
+
+app.post('/login', passport.authenticate('local', {
+  failureRedirect : '/fail'
+}), function(요청, 응답){
+  응답.redirect('/')
+});
+
