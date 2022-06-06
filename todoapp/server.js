@@ -104,6 +104,7 @@ app.delete('/delete', function(요청, 응답){
     }); 
   }); 
 
+
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
@@ -164,3 +165,14 @@ passport.deserializeUser(function (아이디, done) {
     done(null, 결과)
   })
 }); 
+
+app.post('/register',function(요청,응답){
+  db.collection('login').insertOne({ id: 요청.body.id,pw:요청.body.pw },
+     function (에러, 결과) {
+      응답.redirect('/')
+  })
+})
+
+
+// app.use('/shop',require('./routes/shop.js'));
+// app.use('/board/sub',require('./routes/board.js'));
