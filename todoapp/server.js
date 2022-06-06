@@ -8,6 +8,7 @@ const methodOverride = require('method-override')
 app.use(methodOverride('_method'))
 app.set('view engine','ejs');
 
+
 app.use(express.static('public'))
 var db;
 MongoClient.connect('mongodb+srv://leejiyoung:ofz9d2zr@boilerplate.xcwv7.mongodb.net/?retryWrites=true&w=majority',
@@ -15,9 +16,7 @@ function (에러, client) {
 	if (에러) return console.log(에러)
 	db = client.db('todoapp');
 
-        // db.collection('post').insertOne( {이름 : 'John', _id : 100} , function(에러, 결과){
-	    // console.log('저장완료'); 
-	// });
+
 
 	app.listen(8080, function () {
 		console.log('listening on 8080')
@@ -52,6 +51,15 @@ app.get('/list',function(요청,응답){
      응답.render('list.ejs',{ posts:결과 });
  });
 });
+
+app.get('/search',(요청,응답)=>{
+  console.log(요청.query.value);
+  db.collection('post').find({제목:요청.query.value}).toArray((에러,결과)=>{
+    console.log(결과);
+    응답.render('search.ejs',{ posts:결과 });
+
+  });
+})
 
 app.delete('/delete', function(요청, 응답){
     요청.body._id = parseInt(요청.body._id)
@@ -101,6 +109,20 @@ app.post('/login', passport.authenticate('local', {
   응답.redirect('/')
 });
 
+app.get('/mypage', 로그인했니, function (요청, 응답) {
+  console.log(요청.user);
+  응답.render('mypage.ejs', { 사용자: 요청.user })
+}) 
+
+function 로그인했니(요청,응답,next){
+  if(요청.user){
+    next()
+  }else{
+    응답.send('로그인안하셨는데욤?')
+  }
+}
+
+
 passport.use(new LocalStrategy({
   usernameField: 'id',
   passwordField: 'pw',
@@ -125,5 +147,7 @@ passport.serializeUser(function (user, done) {
 });
 
 passport.deserializeUser(function (아이디, done) {
-  done(null, {})
+  db.collection('login').findOne({ id: 아이디 }, function (에러, 결과) {
+    done(null, 결과)
+  })
 }); 
